@@ -8,6 +8,7 @@ export default defineConfig({
     starlight({
       favicon: '/favicon.png',
       title: 'Colloquial Tamil Web',
+      customCss: ['./src/styles.css'],
       social: [
         {
           icon: 'github',
