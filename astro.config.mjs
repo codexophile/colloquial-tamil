@@ -15,12 +15,8 @@ export default defineConfig({
           label: 'GitHub',
           href: 'https://github.com/codexophile/colloquial-tamil',
         },
-        {
-          icon: 'open-book',
-          label: 'GoodReads',
-          href: 'https://www.goodreads.com/book/show/183958.Colloquial_Tamil',
-        },
       ],
+      components: { SocialIcons: './src/components/SocialIcons.astro' },
       sidebar: [
         {
           label: 'FRONT MATTER',
