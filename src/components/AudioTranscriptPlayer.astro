@@ -1,0 +1,370 @@
+---
+interface TranscriptSegment {
+  start: number;
+  end?: number;
+  text: string;
+}
+
+interface Props {
+  src: string;
+  title?: string;
+  artist?: string;
+  poster?: string;
+  transcript?: TranscriptSegment[];
+  accent?: string;
+  autoplay?: boolean;
+}
+
+const {
+  src,
+  title = 'Audio Track',
+  artist = 'Unknown Artist',
+  poster,
+  transcript = [],
+  accent = '#8b5cf6',
+  autoplay = false
+} = Astro.props;
+
+const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
+---
+
+<div
+  class="audio-player"
+  id={componentId}
+  style={`--accent:${accent};`}
+>
+  <div class="player-shell">
+    <div class="player-top">
+      {
+        poster ? (
+          <img
+            class="poster"
+            src={poster}
+            alt={title}
+            loading="lazy"
+          />
+        ) : (
+          <div class="poster placeholder">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 19V6l12-2v13"
+              />
+              <circle cx="6" cy="18" r="3" />
+              <circle cx="18" cy="16" r="3" />
+            </svg>
+          </div>
+        )
+      }
+
+      <div class="meta">
+        <div class="eyebrow">Transcript Player</div>
+        <h3>{title}</h3>
+        <p>{artist}</p>
+      </div>
+    </div>
+
+    <audio
+      class="native-audio"
+      controls
+      preload="metadata"
+      src={src}
+      autoplay={autoplay}
+    />
+
+    {
+      transcript.length > 0 && (
+        <div class="transcript-wrapper">
+          <div class="transcript-header">
+            <span>Transcript</span>
+            <button
+              type="button"
+              class="follow-button"
+              data-follow-toggle
+            >
+              Auto Follow: On
+            </button>
+          </div>
+
+          <div class="transcript" data-transcript>
+            {
+              transcript.map((segment, index) => (
+                <button
+                  type="button"
+                  class="segment"
+                  data-segment
+                  data-index={index}
+                  data-start={segment.start}
+                  data-end={segment.end ?? ''}
+                >
+                  <span class="time">
+                    {new Date(segment.start * 1000)
+                      .toISOString()
+                      .slice(14, 19)}
+                  </span>
+
+                  <span class="text">{segment.text}</span>
+                </button>
+              ))
+            }
+          </div>
+        </div>
+      )
+    }
+  </div>
+</div>
+
+<script define:vars={{ componentId }}>
+  const root = document.getElementById(componentId);
+
+  if (root) {
+    const audio = root.querySelector('audio');
+    const segments = [...root.querySelectorAll('[data-segment]')];
+    const transcript = root.querySelector('[data-transcript]');
+    const followButton = root.querySelector('[data-follow-toggle]');
+
+    let autoFollow = true;
+    let activeIndex = -1;
+
+    followButton?.addEventListener('click', () => {
+      autoFollow = !autoFollow;
+
+      followButton.textContent = autoFollow
+        ? 'Auto Follow: On'
+        : 'Auto Follow: Off';
+    });
+
+    segments.forEach((segment) => {
+      segment.addEventListener('click', () => {
+        const start = Number(segment.dataset.start || 0);
+
+        if (audio) {
+          audio.currentTime = start;
+          audio.play();
+        }
+      });
+    });
+
+    audio?.addEventListener('timeupdate', () => {
+      const currentTime = audio.currentTime;
+
+      let newIndex = -1;
+
+      segments.forEach((segment, index) => {
+        const start = Number(segment.dataset.start || 0);
+        const end = Number(segment.dataset.end || Number.MAX_SAFE_INTEGER);
+
+        if (currentTime >= start && currentTime < end) {
+          newIndex = index;
+        }
+      });
+
+      if (newIndex === activeIndex) return;
+
+      activeIndex = newIndex;
+
+      segments.forEach((segment, index) => {
+        segment.classList.toggle('active', index === activeIndex);
+      });
+
+      if (autoFollow && activeIndex >= 0) {
+        const activeSegment = segments[activeIndex];
+
+        activeSegment.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }
+    });
+
+    transcript?.addEventListener('wheel', () => {
+      autoFollow = false;
+
+      if (followButton) {
+        followButton.textContent = 'Auto Follow: Off';
+      }
+    });
+  }
+</script>
+
+<style>
+  .audio-player {
+    margin: 2rem 0;
+    color: var(--sl-color-white);
+  }
+
+  .player-shell {
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    border-radius: 1.5rem;
+    background:
+      radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 20%, transparent), transparent 30%),
+      linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    backdrop-filter: blur(18px);
+    box-shadow:
+      0 20px 60px rgba(0,0,0,0.35),
+      inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+
+  .player-top {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding: 1.25rem;
+  }
+
+  .poster {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 1rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .poster.placeholder {
+    display: grid;
+    place-items: center;
+  }
+
+  .poster svg {
+    width: 2rem;
+    height: 2rem;
+    opacity: 0.7;
+  }
+
+  .meta {
+    min-width: 0;
+  }
+
+  .eyebrow {
+    margin-bottom: 0.35rem;
+    color: color-mix(in srgb, var(--accent) 70%, white);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .meta h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    line-height: 1.2;
+  }
+
+  .meta p {
+    margin: 0.35rem 0 0;
+    opacity: 0.7;
+    font-size: 0.95rem;
+  }
+
+  .native-audio {
+    width: calc(100% - 2.5rem);
+    margin: 0 1.25rem 1.25rem;
+    border-radius: 999px;
+    accent-color: var(--accent);
+  }
+
+  .transcript-wrapper {
+    border-top: 1px solid rgba(255,255,255,0.06);
+    background: rgba(0,0,0,0.12);
+  }
+
+  .transcript-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .follow-button {
+    padding: 0.4rem 0.75rem;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.03);
+    color: inherit;
+    cursor: pointer;
+    transition: 160ms ease;
+  }
+
+  .follow-button:hover {
+    background: rgba(255,255,255,0.08);
+  }
+
+  .transcript {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 360px;
+    overflow: auto;
+    padding: 0 1rem 1rem;
+    scroll-behavior: smooth;
+  }
+
+  .segment {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 1px solid transparent;
+    border-radius: 1rem;
+    background: rgba(255,255,255,0.03);
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      transform 160ms ease,
+      background 160ms ease,
+      border-color 160ms ease;
+  }
+
+  .segment:hover {
+    transform: translateY(-1px);
+    background: rgba(255,255,255,0.06);
+  }
+
+  .segment.active {
+    border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+    background: color-mix(in srgb, var(--accent) 14%, rgba(255,255,255,0.05));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+
+  .time {
+    flex-shrink: 0;
+    min-width: 48px;
+    color: color-mix(in srgb, var(--accent) 75%, white);
+    font-family: monospace;
+    font-size: 0.82rem;
+    opacity: 0.9;
+  }
+
+  .text {
+    line-height: 1.6;
+    opacity: 0.95;
+  }
+
+  @media (max-width: 640px) {
+    .player-top {
+      align-items: flex-start;
+    }
+
+    .poster {
+      width: 72px;
+      height: 72px;
+    }
+
+    .segment {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }
+</style>
