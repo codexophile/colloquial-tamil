@@ -6,6 +6,7 @@ import starlight from '@astrojs/starlight';
 export default defineConfig({
   integrations: [
     starlight({
+      favicon: '/favicon.png',
       title: 'Colloquial Tamil Web',
       social: [
         {
