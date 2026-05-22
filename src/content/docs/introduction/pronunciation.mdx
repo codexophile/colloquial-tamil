@@ -3,7 +3,19 @@ title: Pronunciation
 description: P
 ---
 
+import track01Audio from '../../../assets/audio/track-01.mp3?url';
+import track01Transcript from '../../../assets/audio/track-01.vtt?url';
 import FlexList from '../../../components/FlexList.astro';
+import AudioTranscriptPlayer from '../../../components/AudioTranscriptPlayer.astro';
+
+<AudioTranscriptPlayer
+  src={track01Audio}
+  title="Introduction and guidance on practicing pronunciation"
+  artist="E. Annamalai, R.E. Asher"
+  poster="" 
+  accent="#06b6d4"
+  transcript={track01Transcript}
+/>
 
 ### Notation
 
