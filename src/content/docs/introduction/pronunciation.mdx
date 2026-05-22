@@ -5,8 +5,12 @@ description: P
 
 import track01Audio from '../../../assets/audio/track-01.mp3?url';
 import track01Transcript from '../../../assets/audio/track-01.vtt?url';
+import track02Audio from '../../../assets/audio/track-02.mp3?url';
+import track02Transcript from '../../../assets/audio/track-02.vtt?url';
 import FlexList from '../../../components/FlexList.astro';
 import AudioTranscriptPlayer from '../../../components/AudioTranscriptPlayer.astro';
+
+### 👂 Audio Track 01
 
 <AudioTranscriptPlayer
   src={track01Audio}
@@ -88,6 +92,17 @@ either in person or by using the recordings that accompany this book. Examples:
 |**ee**|**v<mark>ee</mark>le**|work |as in _v<mark>ai</mark>n_ |
 |**o** |**<mark>o</mark>ru**  |one  |as in _<mark>o</mark>live_|
 |**oo**|**<mark>oo</mark>ḍu** |run  |as in _<mark>ow</mark>n_  |
+
+### 👂 Audio Track 02
+
+<AudioTranscriptPlayer
+  src={track02Audio}
+  title="More on pronunciation"
+  artist="E. Annamalai, R.E. Asher"
+  poster="" 
+  accent="#06b6d4"
+  transcript={track02Transcript}
+/>
 
 ### Nasal vowels
 
