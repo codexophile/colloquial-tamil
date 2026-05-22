@@ -23,6 +23,10 @@ export default defineConfig({
           items: [{ autogenerate: { directory: 'front-matter' } }],
         },
         {
+          label: 'Introduction',
+          items: [{ autogenerate: { directory: 'introduction' } }],
+        },
+        {
           label: 'Reference',
           items: [{ autogenerate: { directory: 'reference' } }],
         },
