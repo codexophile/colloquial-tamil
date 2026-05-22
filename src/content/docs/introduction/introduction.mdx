@@ -4,6 +4,7 @@ description: gggg
 ---
 
 import { Aside } from '@astrojs/starlight/components';
+import GoogleSearchLink from '../../../components/GoogleSearchLink.astro';
 
 ### Where Tamil is spoken
 
@@ -12,7 +13,15 @@ The number of speakers of Tamil worldwide is in excess of 65 million. The two pr
 <Aside>
   {' '}
   These statistics cited in this passage may be outdated; Readers are encouraged
-  to verify these figures against current sources.{' '}
+  to verify these figures against current sources.
+  <GoogleSearchLink
+    label="Where Tamil is spoken"
+    query="where tamil is spoken"
+  />
+  <GoogleSearchLink
+    label="Number of Tamil speakers worldwide"
+    query="number of tamil speakers worldwide"
+  />
 </Aside>
 
 ### The history of the language
