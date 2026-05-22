@@ -478,15 +478,16 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
     scroll-behavior: smooth;
   }
 
-  .transcript-status {
+  .transcript :global(.transcript-status) {
     margin: 0;
     padding: 0.5rem 0.25rem 0;
     color: rgba(255,255,255,0.72);
     font-size: 0.92rem;
   }
 
-  .segment {
+  .transcript :global(.segment) {
     display: flex;
+    align-content: space-between;
     gap: 1rem;
     width: 100%;
     padding: 0.9rem 1rem;
@@ -502,18 +503,18 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
       border-color 160ms ease;
   }
 
-  .segment:hover {
+  .transcript :global(.segment:hover) {
     transform: translateY(-1px);
     background: rgba(255,255,255,0.06);
   }
 
-  .segment.active {
+  .transcript :global(.segment.active) {
     border-color: color-mix(in srgb, var(--accent) 50%, transparent);
     background: color-mix(in srgb, var(--accent) 14%, rgba(255,255,255,0.05));
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent);
   }
 
-  .time {
+  .transcript :global(.segment .time) {
     flex-shrink: 0;
     min-width: 48px;
     color: color-mix(in srgb, var(--accent) 75%, white);
@@ -522,7 +523,7 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
     opacity: 0.9;
   }
 
-  .text {
+  .transcript :global(.segment .text) {
     line-height: 1.6;
     opacity: 0.95;
   }
@@ -537,7 +538,7 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
       height: 72px;
     }
 
-    .segment {
+    .transcript :global(.segment) {
       flex-direction: column;
       gap: 0.5rem;
     }
