@@ -10,7 +10,7 @@ interface Props {
   title?: string;
   artist?: string;
   poster?: string;
-  transcript?: TranscriptSegment[];
+  transcript?: TranscriptSegment[] | string;
   accent?: string;
   autoplay?: boolean;
 }
@@ -24,6 +24,10 @@ const {
   accent = '#8b5cf6',
   autoplay = false
 } = Astro.props;
+
+const transcriptSource = typeof transcript === 'string' ? transcript : '';
+const transcriptSegments = Array.isArray(transcript) ? transcript : [];
+const hasTranscript = transcriptSegments.length > 0 || Boolean(transcriptSource);
 
 const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
 ---
@@ -80,7 +84,7 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
     />
 
     {
-      transcript.length > 0 && (
+      hasTranscript && (
         <div class="transcript-wrapper">
           <div class="transcript-header">
             <span>Transcript</span>
@@ -93,26 +97,36 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
             </button>
           </div>
 
-          <div class="transcript" data-transcript>
+          <div
+            class="transcript"
+            data-transcript
+            data-transcript-source={transcriptSource}
+          >
             {
-              transcript.map((segment, index) => (
-                <button
-                  type="button"
-                  class="segment"
-                  data-segment
-                  data-index={index}
-                  data-start={segment.start}
-                  data-end={segment.end ?? ''}
-                >
-                  <span class="time">
-                    {new Date(segment.start * 1000)
-                      .toISOString()
-                      .slice(14, 19)}
-                  </span>
+              transcriptSegments.length > 0 ? (
+                transcriptSegments.map((segment, index) => (
+                  <button
+                    type="button"
+                    class="segment"
+                    data-segment
+                    data-index={index}
+                    data-start={segment.start}
+                    data-end={segment.end ?? ''}
+                  >
+                    <span class="time">
+                      {new Date(segment.start * 1000)
+                        .toISOString()
+                        .slice(14, 19)}
+                    </span>
 
-                  <span class="text">{segment.text}</span>
-                </button>
-              ))
+                    <span class="text">{segment.text}</span>
+                  </button>
+                ))
+              ) : (
+                <p class="transcript-status" data-transcript-status>
+                  Loading transcript from VTT...
+                </p>
+              )
             }
           </div>
         </div>
@@ -121,39 +135,148 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
   </div>
 </div>
 
-<script define:vars={{ componentId }}>
+<script define:vars={{ componentId, transcriptSource }}>
   const root = document.getElementById(componentId);
 
   if (root) {
     const audio = root.querySelector('audio');
-    const segments = [...root.querySelectorAll('[data-segment]')];
     const transcript = root.querySelector('[data-transcript]');
     const followButton = root.querySelector('[data-follow-toggle]');
 
     let autoFollow = true;
     let activeIndex = -1;
 
-    followButton?.addEventListener('click', () => {
-      autoFollow = !autoFollow;
+    const getSegments = () => [...root.querySelectorAll('[data-segment]')];
 
-      followButton.textContent = autoFollow
-        ? 'Auto Follow: On'
-        : 'Auto Follow: Off';
-    });
+    const formatTime = (seconds) =>
+      new Date(seconds * 1000).toISOString().slice(14, 19);
 
-    segments.forEach((segment) => {
-      segment.addEventListener('click', () => {
-        const start = Number(segment.dataset.start || 0);
+    const parseTimestamp = (value) => {
+      const trimmed = value.trim();
+      const [timePart, fractionPart = '0'] = trimmed.split('.');
+      const parts = timePart.split(':').map(Number);
+      const fraction = Number(`0.${fractionPart}`);
 
-        if (audio) {
-          audio.currentTime = start;
-          audio.play();
+      if (parts.length === 3) {
+        return parts[0] * 3600 + parts[1] * 60 + parts[2] + fraction;
+      }
+
+      if (parts.length === 2) {
+        return parts[0] * 60 + parts[1] + fraction;
+      }
+
+      return Number(trimmed) || 0;
+    };
+
+    const parseWebVtt = (input) => {
+      const lines = input.replace(/^\uFEFF/, '').split(/\r?\n/);
+      const segments = [];
+      let index = 0;
+
+      if (lines[index]?.trim().startsWith('WEBVTT')) {
+        index += 1;
+      }
+
+      while (index < lines.length) {
+        while (index < lines.length && !lines[index].trim()) {
+          index += 1;
         }
-      });
-    });
 
-    audio?.addEventListener('timeupdate', () => {
+        if (index >= lines.length) {
+          break;
+        }
+
+        let timeLine = lines[index].trim();
+
+        if (!timeLine.includes('-->')) {
+          index += 1;
+          timeLine = lines[index]?.trim() || '';
+        }
+
+        if (!timeLine.includes('-->')) {
+          index += 1;
+          continue;
+        }
+
+        const [startText, endTextWithSettings = ''] = timeLine.split('-->');
+        const start = parseTimestamp(startText);
+        const endText = endTextWithSettings.trim().split(/\s+/)[0];
+        const cueLines = [];
+
+        index += 1;
+
+        while (index < lines.length && lines[index].trim()) {
+          cueLines.push(lines[index]);
+          index += 1;
+        }
+
+        segments.push({
+          start,
+          end: parseTimestamp(endText),
+          text: cueLines.join(' ').trim()
+        });
+      }
+
+      return segments.filter((segment) => segment.text.length > 0);
+    };
+
+    const clearTranscriptStatus = () => {
+      transcript?.querySelector('[data-transcript-status]')?.remove();
+    };
+
+    const renderSegments = (segments) => {
+      if (!transcript) {
+        return;
+      }
+
+      transcript.innerHTML = '';
+
+      if (segments.length === 0) {
+        transcript.innerHTML = '<p class="transcript-status">No transcript available.</p>';
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+
+      segments.forEach((segment, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'segment';
+        button.dataset.segment = '';
+        button.dataset.index = String(index);
+        button.dataset.start = String(segment.start);
+
+        if (typeof segment.end === 'number') {
+          button.dataset.end = String(segment.end);
+        }
+
+        button.innerHTML = `
+          <span class="time">${formatTime(segment.start)}</span>
+          <span class="text"></span>
+        `;
+
+        button.querySelector('.text').textContent = segment.text;
+        fragment.append(button);
+      });
+
+      transcript.append(fragment);
+    };
+
+    const refreshActiveSegment = () => {
+      const segments = getSegments();
+
+      segments.forEach((segment, index) => {
+        segment.classList.toggle('active', index === activeIndex);
+      });
+    };
+
+    const updateActiveSegment = () => {
+      if (!audio) {
+        return;
+      }
+
       const currentTime = audio.currentTime;
+      const segments = getSegments();
 
       let newIndex = -1;
 
@@ -166,13 +289,13 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
         }
       });
 
-      if (newIndex === activeIndex) return;
+      if (newIndex === activeIndex) {
+        return;
+      }
 
       activeIndex = newIndex;
 
-      segments.forEach((segment, index) => {
-        segment.classList.toggle('active', index === activeIndex);
-      });
+      refreshActiveSegment();
 
       if (autoFollow && activeIndex >= 0) {
         const activeSegment = segments[activeIndex];
@@ -182,7 +305,33 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
           block: 'center'
         });
       }
+    };
+
+    followButton?.addEventListener('click', () => {
+      autoFollow = !autoFollow;
+
+      followButton.textContent = autoFollow
+        ? 'Auto Follow: On'
+        : 'Auto Follow: Off';
     });
+
+    transcript?.addEventListener('click', (event) => {
+      const clickedSegment =
+        event.target instanceof Element
+          ? event.target.closest('[data-segment]')
+          : null;
+
+      if (!clickedSegment || !transcript.contains(clickedSegment) || !audio) {
+        return;
+      }
+
+      const start = Number(clickedSegment.dataset.start || 0);
+
+      audio.currentTime = start;
+      audio.play();
+    });
+
+    audio?.addEventListener('timeupdate', updateActiveSegment);
 
     transcript?.addEventListener('wheel', () => {
       autoFollow = false;
@@ -191,6 +340,25 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
         followButton.textContent = 'Auto Follow: Off';
       }
     });
+
+    if (transcriptSource) {
+      fetch(transcriptSource)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Failed to load transcript: ${response.status}`);
+          }
+
+          return response.text();
+        })
+        .then((text) => {
+          clearTranscriptStatus();
+          renderSegments(parseWebVtt(text));
+          updateActiveSegment();
+        })
+        .catch(() => {
+          renderSegments([]);
+        });
+    }
   }
 </script>
 
@@ -308,6 +476,13 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
     overflow: auto;
     padding: 0 1rem 1rem;
     scroll-behavior: smooth;
+  }
+
+  .transcript-status {
+    margin: 0;
+    padding: 0.5rem 0.25rem 0;
+    color: rgba(255,255,255,0.72);
+    font-size: 0.92rem;
   }
 
   .segment {
