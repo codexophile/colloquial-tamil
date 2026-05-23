@@ -2,6 +2,7 @@
 interface TranscriptSegment {
   start: number;
   end?: number;
+  speaker?: string;
   text: string;
 }
 
@@ -119,7 +120,13 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
                         .slice(14, 19)}
                     </span>
 
-                    <span class="text">{segment.text}</span>
+                    <span class="content">
+                      {segment.speaker && (
+                        <span class="speaker">{segment.speaker}</span>
+                      )}
+
+                      <span class="text">{segment.text}</span>
+                    </span>
                   </button>
                 ))
               ) : (
@@ -168,6 +175,24 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
       return Number(trimmed) || 0;
     };
 
+    const parseCueText = (input) => {
+      const voiceTagPattern = /^<v(?:\s+([^>]+))?>/i;
+      const lines = input
+        .replace(/<v(?:\s+([^>]+))?>/gi, '')
+        .replace(/<\/v>/gi, '')
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+
+      const speakerMatch = input.trim().match(voiceTagPattern);
+      const speaker = speakerMatch?.[1]?.trim() || '';
+
+      return {
+        speaker,
+        text: lines.join(' ').trim()
+      };
+    };
+
     const parseWebVtt = (input) => {
       const lines = input.replace(/^\uFEFF/, '').split(/\r?\n/);
       const segments = [];
@@ -210,10 +235,13 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
           index += 1;
         }
 
+        const parsedCue = parseCueText(cueLines.join('\n'));
+
         segments.push({
           start,
           end: parseTimestamp(endText),
-          text: cueLines.join(' ').trim()
+          speaker: parsedCue.speaker,
+          text: parsedCue.text
         });
       }
 
@@ -250,12 +278,26 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
           button.dataset.end = String(segment.end);
         }
 
-        button.innerHTML = `
-          <span class="time">${formatTime(segment.start)}</span>
-          <span class="text"></span>
-        `;
+        const time = document.createElement('span');
+        time.className = 'time';
+        time.textContent = formatTime(segment.start);
 
-        button.querySelector('.text').textContent = segment.text;
+        const content = document.createElement('span');
+        content.className = 'content';
+
+        if (segment.speaker) {
+          const speaker = document.createElement('span');
+          speaker.className = 'speaker';
+          speaker.textContent = segment.speaker;
+          content.append(speaker);
+        }
+
+        const text = document.createElement('span');
+        text.className = 'text';
+        text.textContent = segment.text;
+
+        content.append(text);
+        button.append(time, content);
         fragment.append(button);
       });
 
@@ -487,7 +529,7 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
 
   .transcript :global(.segment) {
     display: flex;
-    align-content: space-between;
+    align-items: flex-start;
     gap: 1rem;
     width: 100%;
     padding: 0.9rem 1rem;
@@ -523,6 +565,27 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
     opacity: 0.9;
   }
 
+  .transcript :global(.segment .content) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+  }
+
+  .transcript :global(.segment .speaker) {
+    align-self: flex-start;
+    padding: 0.18rem 0.55rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 18%, rgba(255,255,255,0.05));
+    color: color-mix(in srgb, var(--accent) 72%, white);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
   .transcript :global(.segment .text) {
     line-height: 1.6;
     opacity: 0.95;
@@ -541,6 +604,10 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
     .transcript :global(.segment) {
       flex-direction: column;
       gap: 0.5rem;
+    }
+
+    .transcript :global(.segment .content) {
+      width: 100%;
     }
   }
 </style>
