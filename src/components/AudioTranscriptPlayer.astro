@@ -3,7 +3,7 @@ interface TranscriptSegment {
   start: number;
   end?: number;
   speaker?: string;
-  text: string;
+  text: string | string[];
 }
 
 interface Props {
@@ -28,9 +28,152 @@ const {
 
 const transcriptSource = typeof transcript === 'string' ? transcript : '';
 const transcriptSegments = Array.isArray(transcript) ? transcript : [];
-const hasTranscript = transcriptSegments.length > 0 || Boolean(transcriptSource);
+let hasTranscript = transcriptSegments.length > 0 || Boolean(transcriptSource);
+let resolvedTranscriptSource = transcriptSource;
 
 const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
+// If a transcript source string points to a local VTT file in the project,
+// attempt to read and parse it at render time so SSR can render the segments.
+try {
+  // server-only imports
+  const fs = await import('fs');
+  const path = await import('path');
+
+  const isRemote = (s) => /^https?:\/\//i.test(s) || s.startsWith('data:');
+
+  const parseTimestampServer = (value) => {
+    const trimmed = value.trim();
+    const [timePart, fractionPart = '0'] = trimmed.split('.');
+    const parts = timePart.split(':').map(Number);
+    const fraction = Number(`0.${fractionPart}`);
+
+    if (parts.length === 3) {
+      return parts[0] * 3600 + parts[1] * 60 + parts[2] + fraction;
+    }
+
+    if (parts.length === 2) {
+      return parts[0] * 60 + parts[1] + fraction;
+    }
+
+    return Number(trimmed) || 0;
+  };
+
+  const parseCueTextServer = (input) => {
+    const voiceTagPattern = /^<v(?:\s+([^>]+))?>/i;
+    const lines = input
+      .replace(/<v(?:\s+([^>]+))?>/gi, '')
+      .replace(/<\/v>/gi, '')
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean);
+
+    const speakerMatch = input.trim().match(voiceTagPattern);
+    const speaker = speakerMatch?.[1]?.trim() || '';
+
+    return {
+      speaker,
+      text: lines
+    };
+  };
+
+  const parseWebVttServer = (input) => {
+    const lines = input.replace(/^\uFEFF/, '').split(/\r?\n/);
+    const segments = [];
+    let index = 0;
+
+    if (lines[index]?.trim().startsWith('WEBVTT')) {
+      index += 1;
+    }
+
+    while (index < lines.length) {
+      while (index < lines.length && !lines[index].trim()) {
+        index += 1;
+      }
+
+      if (index >= lines.length) break;
+
+      let timeLine = lines[index].trim();
+
+      if (!timeLine.includes('-->')) {
+        index += 1;
+        timeLine = lines[index]?.trim() || '';
+      }
+
+      if (!timeLine.includes('-->')) {
+        index += 1;
+        continue;
+      }
+
+      const [startText, endTextWithSettings = ''] = timeLine.split('-->');
+      const start = parseTimestampServer(startText);
+      const endText = endTextWithSettings.trim().split(/\s+/)[0];
+      const cueLines = [];
+
+      index += 1;
+
+      while (index < lines.length && lines[index].trim()) {
+        cueLines.push(lines[index]);
+        index += 1;
+      }
+
+      const parsedCue = parseCueTextServer(cueLines.join('\n'));
+
+      segments.push({
+        start,
+        end: parseTimestampServer(endText),
+        speaker: parsedCue.speaker,
+        text: parsedCue.text
+      });
+    }
+
+    return segments.filter((segment) => segment.text.length > 0);
+  };
+
+  if (transcriptSource && transcriptSegments.length === 0 && !isRemote(transcriptSource)) {
+    // Support shorthand formats like "#file:track-01-01.vtt" or "file:track-01-01.vtt"
+    const localRef = transcriptSource
+      .replace(/^#?file:\/?\/?/i, '')
+      .replace(/^\//, '');
+
+    const candidates = [
+      transcriptSource,
+      localRef,
+      localRef.replace(/^src[\\/]/, ''),
+      path.join('src', localRef),
+      path.join('src', 'assets', localRef),
+      path.join('src', 'assets', 'audio', localRef),
+      path.join(process.cwd(), localRef),
+      path.join(process.cwd(), 'src', localRef),
+      path.join(process.cwd(), 'src', 'assets', localRef),
+      path.join(process.cwd(), 'src', 'assets', 'audio', localRef)
+    ];
+
+    for (const candidate of candidates) {
+      try {
+        const abs = path.isAbsolute(candidate) ? candidate : path.resolve(process.cwd(), candidate);
+        if (fs.existsSync(abs)) {
+          const text = fs.readFileSync(abs, 'utf8');
+          const parsed = parseWebVttServer(text);
+          if (parsed.length > 0) {
+            transcriptSegments.push(...parsed);
+            // If we successfully parsed server-side, prevent the client from
+            // attempting to fetch the original source (which may be a project
+            // file reference like "#file:...") by clearing the resolved source.
+            resolvedTranscriptSource = '';
+            break;
+          }
+        }
+      } catch (e) {
+        // ignore and try next candidate
+      }
+    }
+  }
+} catch (e) {
+  // If server-side file access isn't available, silently skip — client will try fetch.
+}
+
+// Recompute hasTranscript after any server-side parsing.
+hasTranscript = transcriptSegments.length > 0 || Boolean(resolvedTranscriptSource);
 ---
 
 <div
@@ -101,7 +244,7 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
           <div
             class="transcript"
             data-transcript
-            data-transcript-source={transcriptSource}
+            data-transcript-source={resolvedTranscriptSource}
           >
             {
               transcriptSegments.length > 0 ? (
@@ -125,7 +268,15 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
                         <span class="speaker">{segment.speaker}</span>
                       )}
 
-                      <span class="text">{segment.text}</span>
+                        <span class="text">
+                          {Array.isArray(segment.text) ? (
+                            segment.text.map((line) => (
+                              <span class="line">{line}</span>
+                            ))
+                          ) : (
+                            segment.text
+                          )}
+                        </span>
                     </span>
                   </button>
                 ))
@@ -142,7 +293,7 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
   </div>
 </div>
 
-<script define:vars={{ componentId, transcriptSource }}>
+<script define:vars={{ componentId, transcriptSource: resolvedTranscriptSource }}>
   const root = document.getElementById(componentId);
 
   if (root) {
@@ -187,9 +338,10 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
       const speakerMatch = input.trim().match(voiceTagPattern);
       const speaker = speakerMatch?.[1]?.trim() || '';
 
+      // Preserve original cue line breaks by returning an array of lines.
       return {
         speaker,
-        text: lines.join(' ').trim()
+        text: lines
       };
     };
 
@@ -278,10 +430,6 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
           button.dataset.end = String(segment.end);
         }
 
-        const time = document.createElement('span');
-        time.className = 'time';
-        time.textContent = formatTime(segment.start);
-
         const content = document.createElement('span');
         content.className = 'content';
 
@@ -292,11 +440,20 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
           content.append(speaker);
         }
 
-        const text = document.createElement('span');
-        text.className = 'text';
-        text.textContent = segment.text;
-
-        content.append(text);
+        // Support multiple lines per cue by rendering each line in its own element.
+        if (Array.isArray(segment.text)) {
+          segment.text.forEach((line) => {
+            const lineEl = document.createElement('span');
+            lineEl.className = 'text line';
+            lineEl.textContent = line;
+            content.append(lineEl);
+          });
+        } else {
+          const text = document.createElement('span');
+          text.className = 'text';
+          text.textContent = segment.text;
+          content.append(text);
+        }
         button.append(time, content);
         fragment.append(button);
       });
@@ -589,6 +746,12 @@ const componentId = `audio-player-${Math.random().toString(36).slice(2)}`;
   .transcript :global(.segment .text) {
     line-height: 1.6;
     opacity: 0.95;
+  }
+
+  .transcript :global(.segment .text.line),
+  .transcript :global(.segment .text .line) {
+    display: block;
+    margin-top: 0.12rem;
   }
 
   @media (max-width: 640px) {
