@@ -26,6 +26,7 @@ export default defineConfig({
           label: 'Introduction',
           items: [{ autogenerate: { directory: 'introduction' } }],
         },
+        {label: 'Lessons', items: [{ autogenerate: { directory: 'lessons' } }]},
         {
           label: 'Reference',
           items: [{ autogenerate: { directory: 'reference' } }],
