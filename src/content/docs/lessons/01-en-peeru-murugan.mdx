@@ -6,6 +6,7 @@ import track0101Audio from '../../../assets/audio/track-01-01.mp3?url';
 import track0101Transcript from '../../../assets/audio/track-01-01.vtt?url';
 
 import AudioTranscriptPlayer from '../../../components/AudioTranscriptPlayer.astro';
+import TextGroupDisplay from '../../../components/TextGroupDisplay.astro';
 import { Card } from '@astrojs/starlight/components';
 
 # My name is Murugan
@@ -34,4 +35,34 @@ by a student of a friend of his._
   poster="" 
   accent="#06b6d4"
   transcript={track0101Transcript}
+/>
+
+export const groups = [
+  {
+    label: "Vocabulary",
+    items:[
+      { primary: "vanakkam",    secondary: "greetings" },
+      { primary: "niinga(ḷ)",   secondary: "you (plural and polite)" },
+      { primary: "peeru",         secondary: "name" },
+      { primary: "aamaa",       secondary: "yes" },
+      { primary: "naan",          secondary: "I" },
+      { primary: "taan (-daan, -ttaan)", secondary: "emphatic word" },
+      { primary: "en",            secondary: "my" },
+      { primary: "peeraasiriyar", secondary: "professor" },
+      { primary: "maaṇavan",      secondary: "student (masc)" },
+      { primary: "romba",                secondary: "very; very much" },
+      { primary: "konjam",               secondary: "a little" },
+      { primary: "magiẕcci", secondary: "happiness, pleasure" },
+      { primary: "ooyvu",    secondary: "rest" },
+      { primary: "ooṭṭal", secondary: "hotel" },
+      { primary: "ange",   secondary: "there" },
+      { primary: "vaa (var-, varu-, va-)", secondary: "come" },
+      { primary: "poo (poog-)",            secondary: "go" },
+      { primary: "eḍu",                    secondary: "take" },
+    ],
+  },
+];
+
+<TextGroupDisplay
+  groups={groups}
 />
