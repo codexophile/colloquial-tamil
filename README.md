@@ -1,49 +1,90 @@
-# Starlight Starter Kit: Basics
+# Colloquial Tamil — Learning Site
 
 [![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
 
+This repository contains the source for the "Colloquial Tamil" learning site built with Astro and the Starlight template. The site hosts lessons, audio transcripts, and exercises designed to help learners study spoken Tamil.
+
+## Key Features
+
+- Lesson content written in Markdown/MDX under `src/content/docs/`.
+- Audio tracks with WebVTT transcripts in `src/assets/audio/`.
+- Reusable UI components in `src/components/` (audio player, lists, links).
+- Lightweight, fast static site built with Astro + Starlight.
+
+## Quickstart (developer)
+
+Prerequisites:
+
+- Node.js 18+ (or LTS)
+- npm (or pnpm/yarn)
+
+Install dependencies and start the dev server:
+
+```bash
+npm install
+npm run dev
 ```
-npm create astro@latest -- --template starlight
+
+Open the site at http://localhost:4321/ (default Astro dev port shown by the dev server).
+
+Build for production and preview the build locally:
+
+```bash
+npm run build
+npm run preview
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Repository Structure
 
-## 🚀 Project Structure
+Overview of the important files and folders you'll work with:
 
-Inside of your Astro + Starlight project, you'll see the following folders and files:
+- `astro.config.mjs`: Astro configuration.
+- `package.json`: Project scripts and dependencies.
+- `src/`
+  - `content.config.ts`: Content configuration for Starlight.
+  - `content/docs/`: Markdown and MDX lesson pages and guides.
+  - `components/`: Astro components (AudioTranscriptPlayer, FlexList, etc.).
+  - `assets/audio/`: Audio files and `.vtt` transcript files.
+  - `styles.css`: Global CSS used across the site.
+- `public/`: Static files served as-is.
 
+Examples from this repo:
+
+- Transcripts: `src/assets/audio/track-01-01.vtt`, `src/assets/audio/track-00-01.vtt`, etc.
+- Lessons: `src/content/docs/lessons/01-en-peeru-murugan.mdx` and related exercise files.
+
+## Content Guidelines
+
+- Create lesson pages as `.md` or `.mdx` files in `src/content/docs/` to expose them as routes.
+- Keep audio files and matching WebVTT transcripts together in `src/assets/audio/` with consistent naming (e.g., `track-01-01.mp3` + `track-01-01.vtt`).
+- Use the existing components for consistent layout and accessibility, for example the `AudioTranscriptPlayer.astro` component for synchronized audio + transcript playback.
+
+## Audio & Transcripts
+
+- Transcripts are stored as WebVTT (`.vtt`) files. Place them alongside audio files and reference the `.vtt` in the audio player component.
+- When adding new audio, include metadata (title, duration, language) at the top of the content or in a small front-matter block.
+
+## Development Notes
+
+- Follow the style and component patterns already in `src/components/` when adding new UI.
+- Keep content modular and use front-matter for metadata so Starlight can index pages properly.
+
+## Deployment
+
+The site is a static build and can be hosted on any static hosting provider (Vercel, Netlify, GitHub Pages, Cloudflare Pages).
+
+Typical deployment steps for Vercel/Netlify:
+
+```bash
+npm run build
+# then point your deployment service to the generated `dist/` folder
 ```
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   └── docs/
-│   └── content.config.ts
-├── astro.config.mjs
-├── package.json
-└── tsconfig.json
-```
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
+## Contributing
 
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
+Contributions are welcome.
 
-Static assets, like favicons, can be placed in the `public/` directory.
+## Troubleshooting
 
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+- If the site doesn't start, delete `node_modules` and `package-lock.json` (or lockfile for your package manager) and run `npm install` again.
+- Check the browser console and terminal for build errors; missing imports or invalid front-matter are common causes.
