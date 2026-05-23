@@ -1,0 +1,316 @@
+---
+/**
+ * TextGroupDisplay.astro
+ * A stylized Astro Starlight component for displaying groups of text elements.
+ * Each group can contain any number of sub-text elements.
+ * Groups are displayed in a flex-row wrapped layout.
+ *
+ * Usage:
+ *
+ * import TextGroupDisplay from './TextGroupDisplay.astro';
+ *
+ * const groups = [
+ *   {
+ *     label: "Greetings",
+ *     items: [
+ *       { primary: "vanakkam", secondary: "greetings" },
+ *       { primary: "niinga(ḷ)", secondary: "you (plural and polite)" },
+ *     ]
+ *   },
+ *   {
+ *     label: "People",
+ *     items: [
+ *       { primary: "naan", secondary: "I" },
+ *       { primary: "peeru", secondary: "name" },
+ *       { primary: "peeraasiriyar", secondary: "professor" },
+ *       { primary: "maaṉavan", secondary: "student (masc)" },
+ *     ]
+ *   }
+ * ];
+ *
+ * <TextGroupDisplay groups={groups} title="Tamil Vocabulary" />
+ */
+
+export interface TextItem {
+  /** The primary/bold text (e.g. the word) */
+  primary: string;
+  /** Optional secondary text (e.g. the definition) */
+  secondary?: string;
+  /** Optional tertiary text (e.g. pronunciation note) */
+  tertiary?: string;
+  /** Optional tag/badge text */
+  tag?: string;
+}
+
+export interface TextGroup {
+  /** Group heading label */
+  label: string;
+  /** Optional group description */
+  description?: string;
+  /** Color accent override (CSS color value) */
+  accent?: string;
+  /** The text items in this group */
+  items: TextItem[];
+}
+
+export interface Props {
+  /** Array of text groups to display */
+  groups: TextGroup[];
+  /** Optional overall title */
+  title?: string;
+  /** Optional subtitle */
+  subtitle?: string;
+}
+
+const { groups, title, subtitle } = Astro.props;
+
+// Default accent palette — cycles through these if no custom accent provided
+const palette = [
+  "#6366f1", // indigo
+  "#ec4899", // pink
+  "#14b8a6", // teal
+  "#f59e0b", // amber
+  "#8b5cf6", // violet
+  "#10b981", // emerald
+  "#f43f5e", // rose
+  "#3b82f6", // blue
+];
+---
+
+<div class="tgd-root">
+  {title && (
+    <div class="tgd-header">
+      <h2 class="tgd-title">{title}</h2>
+      {subtitle && <p class="tgd-subtitle">{subtitle}</p>}
+    </div>
+  )}
+
+  <div class="tgd-grid">
+    {groups.map((group, gi) => {
+      const accent = group.accent ?? palette[gi % palette.length];
+      return (
+        <div
+          class="tgd-group"
+          style={`--accent: ${accent};`}
+        >
+          <div class="tgd-group-header">
+            <span class="tgd-group-dot" />
+            <span class="tgd-group-label">{group.label}</span>
+            {group.description && (
+              <span class="tgd-group-desc">{group.description}</span>
+            )}
+          </div>
+
+          <ul class="tgd-items">
+            {group.items.map((item) => (
+              <li class="tgd-item">
+                <span class="tgd-primary">{item.primary}</span>
+                {item.secondary && (
+                  <span class="tgd-secondary">{item.secondary}</span>
+                )}
+                {item.tertiary && (
+                  <span class="tgd-tertiary">{item.tertiary}</span>
+                )}
+                {item.tag && (
+                  <span class="tgd-tag">{item.tag}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    })}
+  </div>
+</div>
+
+<style>
+  /* ─── Root & typography ──────────────────────────────── */
+  .tgd-root {
+    font-family: "DM Sans", "Outfit", system-ui, sans-serif;
+    container-type: inline-size;
+  }
+
+  /* ─── Page header ────────────────────────────────────── */
+  .tgd-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--sl-color-gray-5, #e5e7eb);
+  }
+
+  .tgd-title {
+    font-size: clamp(1.5rem, 4cqi, 2.25rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--sl-color-white, #111827);
+    margin: 0 0 0.25rem;
+    line-height: 1.1;
+  }
+
+  .tgd-subtitle {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--sl-color-gray-3, #6b7280);
+    font-weight: 400;
+  }
+
+  /* ─── Flex grid ──────────────────────────────────────── */
+  .tgd-grid {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 1.125rem;
+  }
+
+  /* ─── Individual group card ──────────────────────────── */
+  .tgd-group {
+    position: relative;
+    flex: 1 1 220px;
+    min-width: 200px;
+    max-width: 360px;
+
+    background: var(--sl-color-bg-sidebar, #f9fafb);
+    border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+    border-radius: 14px;
+    padding: 1.125rem 1.25rem 1.25rem;
+    overflow: hidden;
+
+    /* Subtle glow behind the card */
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent),
+      0 4px 20px color-mix(in srgb, var(--accent) 8%, transparent);
+
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .tgd-group::before {
+    /* Accent band on the left edge */
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: var(--accent);
+    border-radius: 14px 0 0 14px;
+  }
+
+  .tgd-group:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent),
+      0 8px 32px color-mix(in srgb, var(--accent) 16%, transparent);
+  }
+
+  /* ─── Group header ───────────────────────────────────── */
+  .tgd-group-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.875rem;
+    flex-wrap: wrap;
+  }
+
+  .tgd-group-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 70%, transparent);
+  }
+
+  .tgd-group-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .tgd-group-desc {
+    font-size: 0.7rem;
+    color: var(--sl-color-gray-3, #9ca3af);
+    font-style: italic;
+  }
+
+  /* ─── Items list ─────────────────────────────────────── */
+  .tgd-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .tgd-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.5rem 0.625rem;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--accent) 5%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 10%, transparent);
+    transition: background 0.14s ease;
+  }
+
+  .tgd-item:hover {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+
+  .tgd-primary {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--sl-color-white, #111827);
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+  }
+
+  .tgd-secondary {
+    font-size: 0.825rem;
+    color: var(--sl-color-gray-2, #4b5563);
+    line-height: 1.4;
+    font-weight: 400;
+  }
+
+  .tgd-tertiary {
+    font-size: 0.75rem;
+    color: var(--sl-color-gray-3, #9ca3af);
+    font-style: italic;
+    line-height: 1.3;
+  }
+
+  .tgd-tag {
+    display: inline-block;
+    align-self: flex-start;
+    margin-top: 0.2rem;
+    padding: 0.1em 0.5em;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    color: var(--accent);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ─── Dark mode tweaks (Starlight auto-handles most) ── */
+  :global([data-theme="dark"]) .tgd-group {
+    background: color-mix(in srgb, var(--accent) 4%, #1e1e2e);
+  }
+
+  :global([data-theme="dark"]) .tgd-item {
+    background: color-mix(in srgb, var(--accent) 7%, transparent);
+  }
+
+  :global([data-theme="dark"]) .tgd-secondary {
+    color: #94a3b8;
+  }
+
+  /* ─── Responsive: single column on narrow containers ── */
+  @container (max-width: 480px) {
+    .tgd-group {
+      flex: 1 1 100%;
+      max-width: 100%;
+    }
+  }
+</style>
