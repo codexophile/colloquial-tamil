@@ -1,0 +1,199 @@
+---
+/**
+ * Spoiler.astro — Astro Starlight component
+ * Hides content behind a clickable overlay (e.g. exercise solutions).
+ *
+ * Usage in .mdx:
+ *   import Spoiler from '@components/Spoiler.astro';
+ *
+ *   <Spoiler label="Reveal Solution">
+ *     Your hidden content here — code blocks, prose, whatever.
+ *   </Spoiler>
+ *
+ * Props:
+ *   label?   — button text while hidden  (default: "Reveal Solution")
+ *   hint?    — small subtext shown on the overlay
+ */
+
+interface Props {
+  label?: string;
+  hint?: string;
+}
+
+const {
+  label = "Reveal Solution",
+  hint = "Click to reveal — try solving it yourself first!",
+} = Astro.props;
+
+const id = `spoiler-${Math.random().toString(36).slice(2, 9)}`;
+---
+
+<div class="spoiler-wrapper" id={id}>
+  <!-- The actual content — always in the DOM, just visually masked -->
+  <div class="spoiler-content" aria-hidden="true" inert>
+    <slot />
+  </div>
+
+  <!-- Overlay -->
+  <button
+    class="spoiler-overlay"
+    aria-expanded="false"
+    aria-controls={`${id}-content`}
+    type="button"
+  >
+    <span class="spoiler-icon" aria-hidden="true">
+      <!-- Lock icon -->
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </span>
+    <span class="spoiler-label">{label}</span>
+    {hint && <span class="spoiler-hint">{hint}</span>}
+  </button>
+</div>
+
+<style>
+  /* ── Wrapper ──────────────────────────────────────────── */
+  .spoiler-wrapper {
+    position: relative;
+    border-radius: 0.6rem;
+    overflow: hidden;
+    /* Starlight-aware: uses its CSS custom properties where possible */
+    margin-block: 1.5rem;
+  }
+
+  /* ── Hidden content layer ─────────────────────────────── */
+  .spoiler-content {
+    /* Visible but blurred while locked */
+    filter: blur(6px) brightness(0.55);
+    user-select: none;
+    pointer-events: none;
+    transition: filter 0.45s ease, opacity 0.45s ease;
+    /* Slight desaturation for a "redacted" feel */
+    backdrop-filter: grayscale(0.4);
+    min-height: 3rem;
+    padding: 0.25rem;
+  }
+
+  /* ── Overlay button ───────────────────────────────────── */
+  .spoiler-overlay {
+    /* Absolute, covering the entire wrapper */
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+
+    /* Frosted glass overlay */
+    background: color-mix(in srgb, var(--sl-color-bg, #1a1a2e) 55%, transparent);
+    backdrop-filter: blur(2px);
+
+    border: 1.5px solid color-mix(in srgb, var(--sl-color-accent, #8b5cf6) 50%, transparent);
+    border-radius: 0.6rem;
+    cursor: pointer;
+
+    color: var(--sl-color-text, #e2e8f0);
+    font-family: inherit;
+    text-align: center;
+    padding: 1.25rem;
+
+    transition:
+      background 0.25s ease,
+      border-color 0.25s ease,
+      opacity 0.35s ease,
+      transform 0.2s ease;
+
+    /* Subtle animated gradient shimmer */
+    background-image: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--sl-color-accent, #8b5cf6) 12%, transparent) 0%,
+      transparent 60%
+    );
+  }
+
+  .spoiler-overlay:hover {
+    background: color-mix(in srgb, var(--sl-color-bg, #1a1a2e) 45%, transparent);
+    border-color: var(--sl-color-accent, #8b5cf6);
+    transform: scale(1.005);
+  }
+
+  .spoiler-overlay:focus-visible {
+    outline: 2px solid var(--sl-color-accent, #8b5cf6);
+    outline-offset: 3px;
+  }
+
+  /* ── Overlay text children ────────────────────────────── */
+  .spoiler-icon {
+    color: var(--sl-color-accent, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+  }
+
+  .spoiler-overlay:hover .spoiler-icon {
+    transform: scale(1.15) rotate(-8deg);
+  }
+
+  .spoiler-label {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .spoiler-hint {
+    font-size: 0.78rem;
+    opacity: 0.65;
+    max-width: 28ch;
+    line-height: 1.4;
+  }
+
+  /* ── REVEALED state ───────────────────────────────────── */
+  .spoiler-wrapper.is-revealed .spoiler-content {
+    filter: none;
+    user-select: auto;
+    pointer-events: auto;
+  }
+
+  .spoiler-wrapper.is-revealed .spoiler-overlay {
+    opacity: 0;
+    pointer-events: none;
+    /* Fade & shrink away */
+    transform: scale(0.96);
+  }
+
+  /* ── Light mode adjustments ───────────────────────────── */
+  :root[data-theme="light"] .spoiler-overlay {
+    background: color-mix(in srgb, var(--sl-color-bg, #ffffff) 70%, transparent);
+    color: var(--sl-color-text, #1e293b);
+  }
+
+  :root[data-theme="light"] .spoiler-content {
+    filter: blur(6px) brightness(1.1);
+  }
+</style>
+
+<script>
+  // Progressive enhancement: wire up all spoilers on the page
+  document.querySelectorAll<HTMLElement>(".spoiler-wrapper").forEach((wrapper) => {
+    const overlay = wrapper.querySelector<HTMLButtonElement>(".spoiler-overlay");
+    const content = wrapper.querySelector<HTMLElement>(".spoiler-content");
+
+    if (!overlay || !content) return;
+
+    overlay.addEventListener("click", () => {
+      wrapper.classList.add("is-revealed");
+      overlay.setAttribute("aria-expanded", "true");
+
+      // Re-enable the content for screen readers & interaction
+      content.removeAttribute("aria-hidden");
+      content.removeAttribute("inert");
+    });
+  });
+</script>
