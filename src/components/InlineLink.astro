@@ -1,0 +1,38 @@
+---
+import {Icon } from '@astrojs/starlight/components';
+const {
+  text = '',
+  href = '',
+  icon = 'starlight',
+} = Astro.props;
+---
+
+<a href={href} rel="me" class="sl-flex">
+  <Icon name={icon} />
+  <span>{text}</span>
+</a>
+
+<style>
+  a {
+    display: inline-flex;
+    align-items: center;
+    color: var(--sl-color-text-accent);
+    text-decoration: none;
+    margin: 0px 0.5rem;
+    padding: 0.25rem;
+    background-color: var(--sl-color-bg-sidebar, #f9fafb);
+    border-radius: 6px;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent);
+    transition: background-color 0.18s ease, box-shadow 0.18s ease;
+  }
+  a:hover {
+    opacity: 0.66;
+  }
+  /* Make sure your SVG matches the default 16×16 size */
+  a :global(svg) {
+    margin: 0.2rem;
+    width: 1rem;
+    height: 1rem;
+    fill: currentColor;
+  }
+</style>
