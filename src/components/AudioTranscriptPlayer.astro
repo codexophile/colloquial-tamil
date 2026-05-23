@@ -39,9 +39,9 @@ try {
   const fs = await import('fs');
   const path = await import('path');
 
-  const isRemote = (s) => /^https?:\/\//i.test(s) || s.startsWith('data:');
+  const isRemote = (s: string): boolean => /^https?:\/\//i.test(s) || s.startsWith('data:');
 
-  const parseTimestampServer = (value) => {
+  const parseTimestampServer = (value: string): number => {
     const trimmed = value.trim();
     const [timePart, fractionPart = '0'] = trimmed.split('.');
     const parts = timePart.split(':').map(Number);
@@ -58,13 +58,13 @@ try {
     return Number(trimmed) || 0;
   };
 
-  const parseCueTextServer = (input) => {
+  const parseCueTextServer = (input: string): { speaker: string; text: string[] } => {
     const voiceTagPattern = /^<v(?:\s+([^>]+))?>/i;
     const lines = input
       .replace(/<v(?:\s+([^>]+))?>/gi, '')
       .replace(/<\/v>/gi, '')
       .split(/\r?\n/)
-      .map((l) => l.trim())
+      .map((l: string) => l.trim())
       .filter(Boolean);
 
     const speakerMatch = input.trim().match(voiceTagPattern);
@@ -76,7 +76,7 @@ try {
     };
   };
 
-  const parseWebVttServer = (input) => {
+  const parseWebVttServer = (input: string): TranscriptSegment[] => {
     const lines = input.replace(/^\uFEFF/, '').split(/\r?\n/);
     const segments = [];
     let index = 0;
@@ -429,6 +429,10 @@ hasTranscript = transcriptSegments.length > 0 || Boolean(resolvedTranscriptSourc
         if (typeof segment.end === 'number') {
           button.dataset.end = String(segment.end);
         }
+
+        const time = document.createElement('span');
+        time.className = 'time';
+        time.textContent = formatTime(segment.start);
 
         const content = document.createElement('span');
         content.className = 'content';
