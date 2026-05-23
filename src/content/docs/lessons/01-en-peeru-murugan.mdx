@@ -2,7 +2,10 @@
 title: 1 • En Peeru Murugan
 description: In this lesson you will learn to use simple greetings, introduce yourself, use personal pronouns, use verb forms that are appropriate to the different pronouns, ask questions, make requests, express politeness
 ---
+import track0101Audio from '../../../assets/audio/track-01-01.mp3?url';
+import track0101Transcript from '../../../assets/audio/track-01-01.vtt?url';
 
+import AudioTranscriptPlayer from '../../../components/AudioTranscriptPlayer.astro';
 import { Card } from '@astrojs/starlight/components';
 
 # My name is Murugan
@@ -16,3 +19,19 @@ import { Card } from '@astrojs/starlight/components';
   - make requests
   - express politeness
 </Card>
+
+![Image of an airplane](../../../assets/lesson-01.jpg)
+
+## Arriving in Chennai
+
+_Robert Smith, on his first visit to India, is met at Chennai (Madras) airport
+by a student of a friend of his._
+
+<AudioTranscriptPlayer
+  src={track0101Audio}
+  title="Arriving in Chennai"
+  artist="E. Annamalai, R.E. Asher"
+  poster="" 
+  accent="#06b6d4"
+  transcript={track0101Transcript}
+/>
