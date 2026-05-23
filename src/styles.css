@@ -2,3 +2,7 @@ mark {
   background-color: rgb(130, 48, 48);
   color: white;
 }
+
+p {
+  text-align: justify;
+}
