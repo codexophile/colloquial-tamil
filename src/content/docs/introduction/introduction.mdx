@@ -6,13 +6,18 @@ description: Background information about the Tamil language, its speakers,
 
 import { Aside, LinkCard } from '@astrojs/starlight/components';
 import GoogleSearchLink from '@components/GoogleSearchLink.astro';
+import AdaptiveImage from '@components/AdaptiveImage.astro';
+
+import mapImg from '@assets/map.jpg';
 
 ### Where Tamil is spoken
 
-<div style={{ filter: 'invert(80%)' }}>
-  ![Map of Tamil Nadu and Sri Lanka](@assets/map.jpg 'Map of Tamil Nadu and Sri
-  Lanka')
-</div>
+<AdaptiveImage
+  src={mapImg.src}
+  alt="Map of Tamil Nadu and Sri Lanka"
+  title="Map of Tamil Nadu and Sri Lanka"
+  variant="light"
+/>
 
 The number of speakers of Tamil worldwide is in excess of 65 million. The two
 principal homelands of the language are India, where it is the mother tongue of
