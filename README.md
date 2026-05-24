@@ -62,6 +62,7 @@ Examples from this repo:
 ## Audio & Transcripts
 
 - Transcripts are stored as WebVTT (`.vtt`) files. Place them alongside audio files and reference the `.vtt` in the audio player component.
+- The pronunciation helpers accept audio and transcript file names with extensions, such as `track-00-01.mp3` and `track-00-01.vtt`, and resolve them from `src/assets/audio/`.
 - When adding new audio, include metadata (title, duration, language) at the top of the content or in a small front-matter block.
 
 ## Development Notes

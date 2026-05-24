@@ -3,37 +3,21 @@ title: Pronunciation
 description: P
 ---
 
-import track01Audio from '../../../assets/audio/track-00-01.mp3?url';
-import track02Audio from '../../../assets/audio/track-00-02.mp3?url';
-import track03Audio from '../../../assets/audio/track-00-03.mp3?url';
-import track04Audio from '../../../assets/audio/track-00-04.mp3?url';
-import track05Audio from '../../../assets/audio/track-00-05.mp3?url';
-import track06Audio from '../../../assets/audio/track-00-06.mp3?url';
-import track07Audio from '../../../assets/audio/track-00-07.mp3?url';
-import track08Audio from '../../../assets/audio/track-00-08.mp3?url';
-import track01Transcript from '../../../assets/audio/track-00-01.vtt?url';
-import track02Transcript from '../../../assets/audio/track-00-02.vtt?url';
-import track03Transcript from '../../../assets/audio/track-00-03.vtt?url';
-import track04Transcript from '../../../assets/audio/track-00-04.vtt?url';
-import track05Transcript from '../../../assets/audio/track-00-05.vtt?url';
-import track06Transcript from '../../../assets/audio/track-00-06.vtt?url';
-import track07Transcript from '../../../assets/audio/track-00-07.vtt?url';
-import track08Transcript from '../../../assets/audio/track-00-08.vtt?url';
-
 import FlexList from '../../../components/FlexList.astro';
 import AudioTranscriptPlayer from '../../../components/AudioTranscriptPlayer.astro';
 import { Aside } from '@astrojs/starlight/components';
 import GoogleSearchLink from '../../../components/GoogleSearchLink.astro';
+import { trackAudio, trackTranscript } from './pronunciation-assets';
 
 ### 👂 Audio Track 01
 
 <AudioTranscriptPlayer
-  src={track01Audio}
+  src={trackAudio('track-00-01.mp3')}
   title="Introduction and guidance on practicing pronunciation"
   artist="E. Annamalai, R.E. Asher"
   poster=""
   accent="#06b6d4"
-  transcript={track01Transcript}
+  transcript={trackTranscript('track-00-01.vtt')}
 />
 
 ## Notation
@@ -113,12 +97,12 @@ either in person or by using the recordings that accompany this book. Examples:
 ### 👂 Audio Track 02
 
 <AudioTranscriptPlayer
-  src={track02Audio}
+  src={trackAudio('track-00-02.mp3')}
   title="More on pronunciation"
   artist="E. Annamalai, R.E. Asher"
   poster=""
   accent="#06b6d4"
-  transcript={track02Transcript}
+  transcript={trackTranscript('track-00-02.vtt')}
 />
 
 ## Nasal vowels
@@ -154,12 +138,12 @@ to the last word of a sentence to turn a statement into a question. So, while
 ### 👂 Audio Track 03
 
 <AudioTranscriptPlayer
-  src={track03Audio}
+  src={trackAudio('track-00-03.mp3')}
   title="Nasal vowels"
   artist="E. Annamalai, R.E. Asher"
   poster=""
   accent="#06b6d4"
-  transcript={track03Transcript}
+  transcript={trackTranscript('track-00-03.vtt')}
 />
 
 ## c, t, d, and g
@@ -202,23 +186,23 @@ sound of ‘ch’ in the Scottish pronunciation of ‘loch’. Examples of these
 ### 👂 Audio Track 04
 
 <AudioTranscriptPlayer
-  src={track04Audio}
+  src={trackAudio('track-00-04.mp3')}
   title="t and d"
   artist="E. Annamalai, R.E. Asher"
   poster=""
   accent="#06b6d4"
-  transcript={track04Transcript}
+  transcript={trackTranscript('track-00-04.vtt')}
 />
 
 ### 👂 Audio Track 07
 
 <AudioTranscriptPlayer
-  src={track07Audio}
+  src={trackAudio('track-00-07.mp3')}
   title="Letter G"
   artist="E. Annamalai, R.E. Asher"
   poster=""
   accent="#06b6d4"
-  transcript={track07Transcript}
+  transcript={trackTranscript('track-00-07.vtt')}
 />
 
 ## Retroflexes
@@ -254,12 +238,12 @@ examples:
 ### 👂 Audio Track 05
 
 <AudioTranscriptPlayer
-  src={track05Audio}
+  src={trackAudio('track-00-05.mp3')}
   title="Retroflexes"
   artist="E. Annamalai, R.E. Asher"
   poster=""
   accent="#06b6d4"
-  transcript={track05Transcript}
+  transcript={trackTranscript('track-00-05.vtt')}
 />
 
 ## 🙆‍♂️ Listening exercise
@@ -267,12 +251,12 @@ examples:
 ### 👂 Audio Track 06
 
 <AudioTranscriptPlayer
-  src={track06Audio}
+  src={trackAudio('track-00-06.mp3')}
   title="Difference between dental and retroflex consonants"
   artist="E. Annamalai, R.E. Asher"
   poster=""
   accent="#d40606"
-  transcript={track06Transcript}
+  transcript={trackTranscript('track-00-06.vtt')}
 />
 
 ## Gemination in Tamil
@@ -313,12 +297,12 @@ for those in the above table (**ṇ/ṇṇ**, **n/nn**, **m/mm**, **l/ll**, **�
 ### 👂 Audio Track 08
 
 <AudioTranscriptPlayer
-  src={track08Audio}
+  src={trackAudio('track-00-08.mp3')}
   title="Gemination in Tamil"
   artist="E. Annamalai, R.E. Asher"
   poster=""
   accent="#06b6d4"
-  transcript={track08Transcript}
+  transcript={trackTranscript('track-00-08.vtt')}
 />
 
 ## Conclusion
