@@ -6,3 +6,7 @@ mark {
 p {
   text-align: justify;
 }
+
+.sidebar-content a {
+  white-space: nowrap;
+}
