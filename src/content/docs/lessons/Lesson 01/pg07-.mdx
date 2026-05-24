@@ -1,0 +1,21 @@
+---
+title: Dialogue 02
+description: x
+---
+
+import AudioTranscriptPlayer from '@components/AudioTranscriptPlayer.astro';
+
+import track0102Audio from '@audio/track-01-02.mp3?url';
+import track0102Transcript from '@audio/track-01-02.vtt?url';
+
+_Smith and Murugan arrange to meet later at a favourite spot for a
+walk in the relative cool of the evening._
+
+<AudioTranscriptPlayer
+  src={track0102Audio}
+  title="Going out"
+  artist="E. Annamalai, R.E. Asher"
+  poster=""
+  accent="#06b6d4"
+  transcript={track0102Transcript}
+/>
