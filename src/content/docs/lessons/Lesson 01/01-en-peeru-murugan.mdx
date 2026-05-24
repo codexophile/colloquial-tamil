@@ -1,14 +1,19 @@
 ---
-title: 1 • En Peeru Murugan
-description: In this lesson you will learn to use simple greetings, introduce yourself, use personal pronouns, use verb forms that are appropriate to the different pronouns, ask questions, make requests, express politeness
+title: En Peeru Murugan
+description: In this lesson you will learn to use simple greetings, introduce
+  yourself, use personal pronouns, use verb forms that are appropriate to the
+  different pronouns, ask questions, make requests, express politeness
 ---
 
-import track0101Audio from '../../../assets/audio/track-01-01.mp3?url';
-import track0101Transcript from '../../../assets/audio/track-01-01.vtt?url';
+import track0101Audio from '@audio/track-01-01.mp3?url';
+import track0101Transcript from '@audio/track-01-01.vtt?url';
+import airplaneImg from '@assets/lesson-01.jpg';
+import vanakkamImg from '@assets/lesson-01-02-vanakkam.jpg';
 
-import AudioTranscriptPlayer from '../../../components/AudioTranscriptPlayer.astro';
-import TextGroupDisplay from '../../../components/TextGroupDisplay.astro';
-import InlineLink from '../../../components/InlineLink.astro';
+import AudioTranscriptPlayer from '@components/AudioTranscriptPlayer.astro';
+import TextGroupDisplay from '@components/TextGroupDisplay.astro';
+import InlineLink from '@components/InlineLink.astro';
+import AdaptiveImage from '@components/AdaptiveImage.astro';
 import { LinkCard, Card } from '@astrojs/starlight/components';
 
 # My name is Murugan
@@ -25,7 +30,11 @@ import { LinkCard, Card } from '@astrojs/starlight/components';
 
 </Card>
 
-![Image of an airplane](../../../assets/lesson-01.jpg)
+<AdaptiveImage
+  src={airplaneImg.src}
+  alt="Image of an airplane"
+  variant="light"
+/>
 
 ## Arriving in Chennai
 
@@ -90,7 +99,11 @@ with elders and equals. It signifies bowing, but the physical gesture which
 accompanies the expression is the placing of the palms of one’s hands together
 near the chest.
 
-![Image of a person greeting with folded hands](../../../assets/lesson-01-02-vanakkam.jpg)
+<AdaptiveImage
+  src={vanakkamImg.src}
+  alt="Image of a person greeting with folded hands"
+  variant="light"
+/>
 
 ### Case endings
 
