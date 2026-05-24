@@ -1,6 +1,10 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // https://astro.build/config
 export default defineConfig({
@@ -26,7 +30,10 @@ export default defineConfig({
           label: 'Introduction',
           items: [{ autogenerate: { directory: 'introduction' } }],
         },
-        {label: 'Lessons', items: [{ autogenerate: { directory: 'lessons' } }]},
+        {
+          label: 'Lessons',
+          items: [{ autogenerate: { directory: 'lessons' } }],
+        },
         {
           label: 'Reference',
           items: [{ autogenerate: { directory: 'reference' } }],
@@ -34,4 +41,13 @@ export default defineConfig({
       ],
     }),
   ],
+  vite: {
+    resolve: {
+      alias: {
+        '@assets': path.resolve(__dirname, './src/assets'),
+        '@audio': path.resolve(__dirname, './src/assets/audio'),
+        '@components': path.resolve(__dirname, './src/components'),
+      },
+    },
+  },
 });
