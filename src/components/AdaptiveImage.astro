@@ -1,0 +1,70 @@
+---
+/**
+ * AdaptiveImage.astro
+ * 
+ * An image component for Astro Starlight that automatically inverts
+ * when the image's native color scheme doesn't match the current color mode.
+ *
+ * Usage:
+ *   <AdaptiveImage src="/diagram.png" alt="System diagram" variant="light" />
+ *   <AdaptiveImage src="/logo-dark.svg" alt="Logo" variant="dark" />
+ *
+ * Props:
+ *   src      — image path or URL
+ *   alt      — alt text (required for accessibility)
+ *   variant  — "light" | "dark" — the color scheme the image was designed for
+ *   filterIntensity — optional intensity of the invert filter
+ *   class    — optional extra CSS classes
+ *   width    — optional width
+ *   height   — optional height
+ */
+
+interface Props {
+  src: string;
+  alt: string;
+  variant: "light" | "dark";
+  filterIntensity?: number;
+  class?: string;
+  width?: number | string;
+  height?: number | string;
+}
+
+const { src, alt, variant, filterIntensity = 0.8, class: className, width, height } = Astro.props;
+
+// data-variant drives the CSS logic below
+---
+
+<img
+  src={src}
+  alt={alt}
+  width={width}
+  height={height}
+  data-adaptive-img={variant}
+  class:list={["adaptive-img", className]}
+  style={`--adaptive-invert: ${filterIntensity}`}
+/
+>
+
+<style>
+  /*
+   * Starlight exposes the current color mode via [data-theme="dark"] on <html>.
+   * We invert when:
+   *   - variant="light"  AND  theme is dark   → light image in dark mode
+   *   - variant="dark"   AND  theme is light  → dark image in light mode
+   */
+
+  /* Light image → invert in dark mode */
+  :global([data-theme="dark"]) .adaptive-img[data-adaptive-img="light"] {
+    filter: invert(var(--adaptive-invert));
+  }
+
+  /* Dark image → invert in light mode (i.e. NOT dark mode) */
+  :global(:not([data-theme="dark"])) .adaptive-img[data-adaptive-img="dark"] {
+    filter: invert(var(--adaptive-invert));
+  }
+
+  /* Smooth transition so the flip isn't jarring when user toggles theme */
+  .adaptive-img {
+    transition: filter 0.2s ease;
+  }
+</style>
