@@ -20,7 +20,10 @@ export default defineConfig({
           href: 'https://github.com/codexophile/colloquial-tamil',
         },
       ],
-      components: { SocialIcons: './src/components/SocialIcons.astro' },
+      components: {
+        SocialIcons: './src/components/SocialIcons.astro',
+        Sidebar: './src/components/CustomSidebarSublist.astro',
+      },
       sidebar: [
         {
           label: 'FRONT MATTER',

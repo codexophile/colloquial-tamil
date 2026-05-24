@@ -9,6 +9,7 @@ This repository contains the source for the "Colloquial Tamil" learning site bui
 - Lesson content written in Markdown/MDX under `src/content/docs/`.
 - Audio tracks with WebVTT transcripts in `src/assets/audio/`.
 - Reusable UI components in `src/components/` (audio player, lists, links).
+- Sidebar customization keeps the original Starlight styling while adding lesson subtitles for lesson groups.
 - Lightweight, fast static site built with Astro + Starlight.
 
 ## Quickstart (developer)
