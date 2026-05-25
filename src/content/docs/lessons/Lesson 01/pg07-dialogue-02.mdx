@@ -4,6 +4,7 @@ description: x
 ---
 
 import AudioTranscriptPlayer from '@components/AudioTranscriptPlayer.astro';
+import TextGroupDisplay from '@components/TextGroupDisplay.astro';
 
 import track0102Audio from '@audio/track-01-02.mp3?url';
 import track0102Transcript from '@audio/track-01-02.vtt?url';
@@ -19,3 +20,23 @@ walk in the relative cool of the evening._
   accent="#06b6d4"
   transcript={track0102Transcript}
 />
+
+export const groups = [
+  {
+    label: 'Vocabulary',
+    items: [
+      { primary: 'saayangaalam', secondary: 'evening' },
+      { primary: 'biic', secondary: 'beach (also biiccu)' },
+      { primary: 'Meriinaa', secondary: 'Marina' },
+      { primary: 'inda', secondary: 'this' },
+      { primary: 'Cenne', secondary: 'Chennai' },
+      { primary: 'perume', secondary: 'pride, renown' },
+      { primary: 'ingliṣ', secondary: 'English' },
+      { primary: 'Meḍraas', secondary: 'Madras' },
+      { primary: 'adu', secondary: 'that, it' },
+      { primary: 'paẓeya', secondary: 'old' },
+    ],
+  },
+];
+
+<TextGroupDisplay groups={groups} />
